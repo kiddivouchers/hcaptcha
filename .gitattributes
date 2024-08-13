@@ -1,0 +1,4 @@
+.github/ export-ignore
+vendor-bin/ export-ignore
+phpstan.neon export-ignore
+.php-cs-fixer.dist.php export-ignore

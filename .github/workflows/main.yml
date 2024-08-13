@@ -1,0 +1,82 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        php:
+          - '8.2'
+          - '8.3'
+        deps:
+          - highest
+          - lowest
+        experimental: [false]
+        include:
+          - os: ubuntu-latest
+            php: '8.2'
+            phpstan: 1
+          - os: ubuntu-latest
+            php: '8.3'
+            phpstan: 1
+          - os: ubuntu-latest
+            php: '8.3'
+            coverage: 1
+          - os: ubuntu-latest
+            php: 'nightly'
+            deps: 'highest'
+            experimental: true
+      fail-fast: true
+    name: PHP ${{ matrix.php }} / ${{ matrix.deps }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.deps }}
+      - name: Install dependencies (PHPUnit)
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: locked
+          working-directory: vendor-bin/phpunit
+      - name: Install dependencies (PHPStan)
+        uses: ramsey/composer-install@v3
+        if: matrix.phpstan == 1
+        with:
+          dependency-versions: locked
+          working-directory: vendor-bin/phpstan
+      - name: Enable assertions
+        run: |
+          for dir in /etc/php/*/cli/conf.d; do
+            echo 'zend.assertions=1' | sudo tee "${dir}/assert.ini" >/dev/null
+          done
+      - name: PHPUnit
+        run: |
+          vendor-bin/phpunit/vendor/bin/phpunit --version | head -n1 >&2
+
+          if [ "${{ matrix.coverage }}" = "1" ]; then
+            sudo phpenmod xdebug
+            vendor-bin/phpunit/vendor/bin/phpunit --coverage-clover=coverage.xml
+            sudo phpdismod xdebug
+          else
+            vendor-bin/phpunit/vendor/bin/phpunit
+          fi
+      - name: PHPStan
+        if: matrix.phpstan == 1
+        run: |
+          (vendor-bin/phpstan/vendor/bin/phpstan analyse --no-progress --error-format=checkstyle || true) | vendor-bin/phpstan/vendor/bin/cs2pr
