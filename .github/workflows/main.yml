@@ -23,6 +23,12 @@ jobs:
         deps:
           - highest
           - lowest
+        psr17:
+          - nyholm/psr7:^1.8
+          - guzzlehttp/psr7:^2.7
+          - slim/psr7:^1.7
+        psr18:
+          - symfony/http-client:^7.1
         experimental: [false]
         include:
           - os: ubuntu-latest
@@ -39,12 +45,20 @@ jobs:
             deps: 'highest'
             experimental: true
       fail-fast: true
-    name: PHP ${{ matrix.php }} / ${{ matrix.deps }}
+    name: 'PHP ${{ matrix.php }} / ${{ matrix.deps }} (PSR-17: ${{ matrix.psr17 }}) (PSR-18: ${{ matrix.psr18 }})'
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+      - name: Modify composer.json
+        run: |
+          # Remove the preset dependencies
+          composer remove --no-update --dev nyholm/psr7
+          composer remove --no-update --dev symfony/http-client
+
+          composer require --no-update --dev ${{ matrix.psr17 }}
+          composer require --no-update --dev ${{ matrix.psr18 }}
       - name: Install dependencies
         uses: ramsey/composer-install@v3
         with:
