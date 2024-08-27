@@ -134,6 +134,19 @@ final class ResultTest extends TestCase
             function (Result $result) {
                 self::assertTrue($result->success);
                 self::assertSame([], $result->errorCodes);
+                self::assertEquals(new \DateTimeImmutable('2024-08-27T16:11:27.595Z'), $result->challengeTime);
+                self::assertNull($result->hostname);
+            },
+            [
+                'success' => true,
+                'challenge_ts' => '2024-08-27T16:11:27.595Z',
+            ],
+        ];
+
+        yield [
+            function (Result $result) {
+                self::assertTrue($result->success);
+                self::assertSame([], $result->errorCodes);
                 self::assertNull($result->challengeTime);
                 self::assertNull($result->hostname);
             },

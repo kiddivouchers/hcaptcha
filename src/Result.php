@@ -67,7 +67,11 @@ final class Result
     public static function fromArray(array $response): self
     {
         if (isset($response['challenge_ts']) && \is_string($response['challenge_ts'])) {
-            $challengeTime = \DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:s\Z', $response['challenge_ts'], new \DateTimeZone('UTC'));
+            $challengeTime = \DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:s.u\Z', $response['challenge_ts'], new \DateTimeZone('UTC'));
+
+            if ($challengeTime === false) {
+                $challengeTime = \DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:s\Z', $response['challenge_ts'], new \DateTimeZone('UTC'));
+            }
 
             if ($challengeTime === false) {
                 throw new \InvalidArgumentException(sprintf(
