@@ -75,10 +75,6 @@ final class Client implements ClientInterface
             return Result::fromJson((string) $response->getBody());
         }
 
-        throw new \RuntimeException(sprintf(
-            'Response was not a successful JSON response, got: status `%d` with content type `%s`',
-            $response->getStatusCode(),
-            $response->getHeaderLine('Content-Type'),
-        ));
+        throw Exception\NotSupportedResponseException::fromResponse($response);
     }
 }

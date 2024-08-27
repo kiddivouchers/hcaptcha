@@ -22,6 +22,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 #[CoversClass(Client::class)]
 #[UsesClass(Result::class)]
+#[UsesClass(Exception\NotSupportedResponseException::class)]
 final class ClientTest extends TestCase
 {
     public function testWithoutSiteKeyAndRemoteIp(): void
@@ -78,6 +79,24 @@ final class ClientTest extends TestCase
 
         $result = $client->verify('abcdef', '112233_445566&789', '10.9.2.234');
         self::assertTrue($result->success);
+    }
+
+    public function testWithNonJsonContentType(): void
+    {
+        $client = $this->createClient(function (string $method, string $url, array $options) {
+            self::assertSame('POST', $method);
+            self::assertSame('https://api.hcaptcha.com/siteverify', $url);
+            self::assertSame('response=abcdef&remoteip=10.9.2.234&sitekey=112233_445566%26789', $options['body']);
+
+            return new MockResponse(\json_encode(['success' => true], flags: \JSON_THROW_ON_ERROR), [
+                'response_headers' => ['Content-Type: application/not-json'],
+            ]);
+        });
+
+        $this->expectException(Exception\NotSupportedResponseException::class);
+        $this->expectExceptionMessage('Response was not a successful JSON response, got: status `200` with content type `application/not-json`');
+
+        $client->verify('abcdef', '112233_445566&789', '10.9.2.234');
     }
 
     private function createClient(\Closure $responseFactory): Client
