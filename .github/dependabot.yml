@@ -1,0 +1,64 @@
+# https://help.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates#about-the-dependabotyml-file
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    open-pull-requests-limit: 5
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: github-actions
+      include: scope
+    labels: []
+  - package-ecosystem: composer
+    directory: /vendor-bin/cs
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: composer
+      include: scope
+    allow:
+      - dependency-type: direct
+    labels: []
+  - package-ecosystem: composer
+    directory: /vendor-bin/phpstan
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: composer
+      include: scope
+    allow:
+      - dependency-type: direct
+    groups:
+      phpstan:
+        patterns:
+          - "phpstan/phpstan"
+          - "phpstan/phpstan-*"
+        update-types:
+          - minor
+          - patch
+    labels: []
+  - package-ecosystem: composer
+    directory: /vendor-bin/phpunit
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: composer
+      include: scope
+    allow:
+      - dependency-type: direct
+    groups:
+      phpstan:
+        patterns:
+          - "phpunit/*"
+          - "sebastian/*"
+        update-types:
+          - minor
+          - patch
+    labels: []
