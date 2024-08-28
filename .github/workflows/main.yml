@@ -28,7 +28,7 @@ jobs:
           - guzzlehttp/psr7:^2.7
           - slim/psr7:^1.7
         psr18:
-          - symfony/http-client:^7.1
+          - symfony/http-client:^5.4
         experimental: [false]
         include:
           - os: ubuntu-latest
@@ -43,6 +43,8 @@ jobs:
           - os: ubuntu-latest
             php: 'nightly'
             deps: 'highest'
+            psr17: 'nyholm/psr7:^1.8'
+            psr18: 'symfony/http-client:^5.4'
             experimental: true
       fail-fast: true
     name: 'PHP ${{ matrix.php }} / ${{ matrix.deps }} (PSR-17: ${{ matrix.psr17 }}) (PSR-18: ${{ matrix.psr18 }})'
