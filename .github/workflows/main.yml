@@ -29,6 +29,7 @@ jobs:
           - slim/psr7:^1.7
         psr18:
           - symfony/http-client:^5.4
+          - guzzlehttp/guzzle:^7
         experimental: [false]
         include:
           - os: ubuntu-latest

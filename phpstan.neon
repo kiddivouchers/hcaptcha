@@ -6,4 +6,7 @@ parameters:
         - vendor-bin/phpunit/vendor
     excludePaths:
         analyse:
+            - tests/ClientTest/guzzle.php
+            - tests/ClientTest/symfony.php
             - vendor-bin/phpunit/vendor
+    treatPhpDocTypesAsCertain: false

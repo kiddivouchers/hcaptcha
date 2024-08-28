@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace WiderPlan\Hcaptcha;
 
+use Composer\InstalledVersions;
+use Http\Discovery\Psr17FactoryDiscovery;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\HttpClient\Psr18Client;
-use Symfony\Component\HttpClient\Response\MockResponse;
+use Psr\Http\Message\ResponseInterface;
 
 #[CoversClass(Client::class)]
 #[UsesClass(Result::class)]
@@ -27,10 +27,10 @@ final class ClientTest extends TestCase
 {
     public function testWithoutSiteKeyAndRemoteIp(): void
     {
-        $client = $this->createClient(function (string $method, string $url, array $options) {
+        $client = $this->createClient(function (string $method, string $url, string $body) {
             self::assertSame('POST', $method);
             self::assertSame('https://api.hcaptcha.com/siteverify', $url);
-            self::assertSame('response=abcdef', $options['body']);
+            self::assertSame('response=abcdef', $body);
 
             return $this->createResponse([]);
         });
@@ -41,10 +41,10 @@ final class ClientTest extends TestCase
 
     public function testWithSiteKeyAndWithoutRemoteIp(): void
     {
-        $client = $this->createClient(function (string $method, string $url, array $options) {
+        $client = $this->createClient(function (string $method, string $url, string $body) {
             self::assertSame('POST', $method);
             self::assertSame('https://api.hcaptcha.com/siteverify', $url);
-            self::assertSame('response=abcdef&sitekey=12345+67890', $options['body']);
+            self::assertSame('response=abcdef&sitekey=12345+67890', $body);
 
             return $this->createResponse([]);
         });
@@ -55,10 +55,10 @@ final class ClientTest extends TestCase
 
     public function testWithoutSiteKeyAndWithRemoteIp(): void
     {
-        $client = $this->createClient(function (string $method, string $url, array $options) {
+        $client = $this->createClient(function (string $method, string $url, string $body) {
             self::assertSame('POST', $method);
             self::assertSame('https://api.hcaptcha.com/siteverify', $url);
-            self::assertSame('response=abcdef&remoteip=10.9.2.234', $options['body']);
+            self::assertSame('response=abcdef&remoteip=10.9.2.234', $body);
 
             return $this->createResponse([]);
         });
@@ -69,10 +69,10 @@ final class ClientTest extends TestCase
 
     public function testWithSiteKeyRemoteIp(): void
     {
-        $client = $this->createClient(function (string $method, string $url, array $options) {
+        $client = $this->createClient(function (string $method, string $url, string $body) {
             self::assertSame('POST', $method);
             self::assertSame('https://api.hcaptcha.com/siteverify', $url);
-            self::assertSame('response=abcdef&remoteip=10.9.2.234&sitekey=112233_445566%26789', $options['body']);
+            self::assertSame('response=abcdef&remoteip=10.9.2.234&sitekey=112233_445566%26789', $body);
 
             return $this->createResponse([]);
         });
@@ -83,14 +83,17 @@ final class ClientTest extends TestCase
 
     public function testWithNonJsonContentType(): void
     {
-        $client = $this->createClient(function (string $method, string $url, array $options) {
+        $client = $this->createClient(function (string $method, string $url, string $body) {
             self::assertSame('POST', $method);
             self::assertSame('https://api.hcaptcha.com/siteverify', $url);
-            self::assertSame('response=abcdef&remoteip=10.9.2.234&sitekey=112233_445566%26789', $options['body']);
+            self::assertSame('response=abcdef&remoteip=10.9.2.234&sitekey=112233_445566%26789', $body);
 
-            return new MockResponse(\json_encode(['success' => true], flags: \JSON_THROW_ON_ERROR), [
-                'response_headers' => ['Content-Type: application/not-json'],
-            ]);
+            $body = \json_encode(['success' => true], flags: \JSON_THROW_ON_ERROR);
+
+            return Psr17FactoryDiscovery::findResponseFactory()
+                ->createResponse(200)
+                ->withHeader('Content-Type', 'application/not-json')
+                ->withBody(Psr17FactoryDiscovery::findStreamFactory()->createStream($body));
         });
 
         $this->expectException(Exception\NotSupportedResponseException::class);
@@ -99,21 +102,36 @@ final class ClientTest extends TestCase
         $client->verify('abcdef', '112233_445566&789', '10.9.2.234');
     }
 
+    /**
+     * @param \Closure(string, string, string): ResponseInterface $responseFactory
+     */
     private function createClient(\Closure $responseFactory): Client
     {
-        $httpClient = new MockHttpClient($responseFactory);
+        if (InstalledVersions::isInstalled('symfony/http-client')) {
+            $factory = 'symfony.php';
+        }
 
-        return Client::create('', new Psr18Client($httpClient));
+        if (InstalledVersions::isInstalled('guzzlehttp/guzzle')) {
+            $factory = 'guzzle.php';
+        }
+
+        if (isset($factory)) {
+            return (require basename(__FILE__, '.php') . '/' . $factory)('', $responseFactory);
+        }
+
+        self::markTestSkipped('No supported packages installed');
     }
 
     /** @param list<ErrorCode> $errorCodes */
-    private function createResponse(array $errorCodes): MockResponse
+    private function createResponse(array $errorCodes): ResponseInterface
     {
         $content = ['error-codes' => $errorCodes];
         $content['success'] = $errorCodes === [] ? true : false;
+        $body = \json_encode($content, flags: \JSON_THROW_ON_ERROR);
 
-        return new MockResponse(\json_encode($content, flags: \JSON_THROW_ON_ERROR), [
-            'response_headers' => ['Content-Type: application/json'],
-        ]);
+        return Psr17FactoryDiscovery::findResponseFactory()
+            ->createResponse(200)
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody(Psr17FactoryDiscovery::findStreamFactory()->createStream($body));
     }
 }
