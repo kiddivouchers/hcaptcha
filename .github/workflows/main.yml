@@ -30,6 +30,8 @@ jobs:
           - laminas/laminas-diactoros:^2.3||^3
         psr18:
           - symfony/http-client:^5.4
+          - symfony/http-client:^6.4
+          - symfony/http-client:^7.1
           - guzzlehttp/guzzle:^7
         experimental: [false]
         include:
@@ -46,7 +48,7 @@ jobs:
             php: 'nightly'
             deps: 'highest'
             psr17: 'nyholm/psr7:^1.8'
-            psr18: 'symfony/http-client:^5.4'
+            psr18: 'symfony/http-client:^7.1'
             experimental: true
       fail-fast: true
     name: 'PHP ${{ matrix.php }} / ${{ matrix.deps }} (PSR-17: ${{ matrix.psr17 }}) (PSR-18: ${{ matrix.psr18 }})'
