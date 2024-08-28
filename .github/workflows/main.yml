@@ -57,6 +57,12 @@ jobs:
           composer remove --no-update --dev nyholm/psr7
           composer remove --no-update --dev symfony/http-client
 
+          # When performing static analysis fixed interfaces are required.
+          # https://github.com/php-fig/http-message/pull/50
+          if [ "${{ matrix.phpstan }}" = "1" ]; then
+            composer require --no-update 'psr/http-message:>=1.0.1'
+          fi
+
           composer require --no-update --dev ${{ matrix.psr17 }}
           composer require --no-update --dev ${{ matrix.psr18 }}
       - name: Install dependencies
