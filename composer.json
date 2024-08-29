@@ -9,7 +9,7 @@
         }
     },
     "require": {
-        "php": ">= 8.2",
+        "php": ">= 8.1",
         "psr/http-client": "^1.0",
         "psr/http-client-implementation": "*",
         "psr/http-factory-implementation": "*",
@@ -19,8 +19,8 @@
         "bamarni/composer-bin-plugin": "^1.8",
         "nyholm/psr7": "^1.8",
         "php-http/discovery": "^1.17",
-        "symfony/http-client": "^7.1",
-        "symfony/var-dumper": "^7.1"
+        "symfony/http-client": "^6.4 || ^7.1",
+        "symfony/var-dumper": "^6.4 || ^7.1"
     },
     "suggest": {
         "php-http/discovery": "For automatic discovery and configuration of HTTP client."

@@ -18,6 +18,8 @@ use Http\Discovery\Psr17FactoryDiscovery;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientInterface as HttpClientInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 #[CoversClass(Client::class)]
@@ -25,6 +27,22 @@ use Psr\Http\Message\ResponseInterface;
 #[UsesClass(Exception\NotSupportedResponseException::class)]
 final class ClientTest extends TestCase
 {
+    public function testCreateWithInvalidObject(): void
+    {
+        $httpClient = new class implements HttpClientInterface {
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                throw new \Exception();
+            }
+        };
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('WiderPlan\\Hcaptcha\\Client::create(): Argument #2 ($httpClient) must be of type (Psr\\Http\\Client\\ClientInterface&Psr\\Http\\Message\\RequestFactoryInterface&Psr\\Http\\Message\\StreamFactoryInterface)|null, Psr\Http\Client\ClientInterface@anonymous given');
+
+        // @phpstan-ignore-next-line argument.type
+        Client::create('', $httpClient);
+    }
+
     public function testWithoutSiteKeyAndRemoteIp(): void
     {
         $client = $this->createClient(function (string $method, string $url, string $body) {

@@ -34,11 +34,27 @@ final class Client implements ClientInterface
         private readonly string $secretKey,
     ) {}
 
+    /**
+     * @param (HttpClientInterface&RequestFactoryInterface&StreamFactoryInterface)|null $httpClient
+     */
     public static function create(
         #[\SensitiveParameter()]
         string $secretKey,
-        (HttpClientInterface&RequestFactoryInterface&StreamFactoryInterface)|null $httpClient = null,
+        object|null $httpClient = null,
     ): self {
+        // @todo This can be removed when minimum requirement is raised to PHP 8.2.
+        if ($httpClient !== null && !($httpClient instanceof HttpClientInterface && $httpClient instanceof RequestFactoryInterface && $httpClient instanceof StreamFactoryInterface)) {
+            throw new \TypeError(sprintf(
+                '%s::%s(): Argument #2 ($httpClient) must be of type (%s&%s&%s)|null, %s given',
+                self::class,
+                __METHOD__,
+                HttpClientInterface::class,
+                RequestFactoryInterface::class,
+                StreamFactoryInterface::class,
+                \get_debug_type($httpClient),
+            ));
+        }
+
         if ($httpClient === null) {
             if (!\class_exists(Psr18Client::class)) {
                 throw new \LogicException('Pass in a suitable object or install package `php-http/discovery` to have one automatically created');
