@@ -1,0 +1,108 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 1' # Weekly
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        php:
+          - '8.2'
+          - '8.3'
+        deps:
+          - highest
+          - lowest
+        psr17:
+          - nyholm/psr7:^1.8
+          - guzzlehttp/psr7:^2.7
+          - slim/psr7:^1.7
+          - laminas/laminas-diactoros:^2.3||^3
+        psr18:
+          - symfony/http-client:^5.4
+          - symfony/http-client:^6.4
+          - symfony/http-client:^7.1
+          - guzzlehttp/guzzle:^7
+        experimental: [false]
+        include:
+          - os: ubuntu-latest
+            php: '8.2'
+            phpstan: 1
+          - os: ubuntu-latest
+            php: '8.3'
+            phpstan: 1
+          - os: ubuntu-latest
+            php: '8.3'
+            coverage: 1
+          - os: ubuntu-latest
+            php: 'nightly'
+            deps: 'highest'
+            psr17: 'nyholm/psr7:^1.8'
+            psr18: 'symfony/http-client:^7.1'
+            experimental: true
+      fail-fast: true
+    name: 'PHP ${{ matrix.php }} / ${{ matrix.deps }} (PSR-17: ${{ matrix.psr17 }}) (PSR-18: ${{ matrix.psr18 }})'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Modify composer.json
+        run: |
+          # Remove the preset dependencies
+          composer remove --no-update --dev nyholm/psr7
+          composer remove --no-update --dev symfony/http-client
+
+          # When performing static analysis fixed interfaces are required.
+          # https://github.com/php-fig/http-message/pull/50
+          if [ "${{ matrix.phpstan }}" = "1" ]; then
+            composer require --no-update 'psr/http-message:>=1.0.1'
+          fi
+
+          composer require --no-update --dev ${{ matrix.psr17 }}
+          composer require --no-update --dev ${{ matrix.psr18 }}
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.deps }}
+      - name: Install dependencies (PHPUnit)
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: locked
+          working-directory: vendor-bin/phpunit
+      - name: Install dependencies (PHPStan)
+        uses: ramsey/composer-install@v3
+        if: matrix.phpstan == 1
+        with:
+          dependency-versions: locked
+          working-directory: vendor-bin/phpstan
+      - name: Enable assertions
+        run: |
+          for dir in /etc/php/*/cli/conf.d; do
+            echo 'zend.assertions=1' | sudo tee "${dir}/assert.ini" >/dev/null
+          done
+      - name: PHPUnit
+        run: |
+          vendor-bin/phpunit/vendor/bin/phpunit --version | head -n1 >&2
+
+          if [ "${{ matrix.coverage }}" = "1" ]; then
+            sudo phpenmod xdebug
+            vendor-bin/phpunit/vendor/bin/phpunit --coverage-clover=coverage.xml
+            sudo phpdismod xdebug
+          else
+            vendor-bin/phpunit/vendor/bin/phpunit
+          fi
+      - name: PHPStan
+        if: matrix.phpstan == 1
+        run: |
+          (vendor-bin/phpstan/vendor/bin/phpstan analyse --no-progress --error-format=checkstyle || true) | vendor-bin/phpstan/vendor/bin/cs2pr

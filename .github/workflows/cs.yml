@@ -1,0 +1,38 @@
+name: Coding Standards
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        php:
+          - '8.2'
+      fail-fast: true
+    name: PHP ${{ matrix.php }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Validate composer.json
+        run: composer validate
+      - name: Install dependencies (PHP-CS-Fixer)
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: locked
+          working-directory: vendor-bin/cs
+      - name: PHP-CS-Fixer
+        run: |
+          (vendor-bin/cs/vendor/bin/php-cs-fixer fix --dry-run --format checkstyle || true) | vendor-bin/cs/vendor/bin/cs2pr
