@@ -76,6 +76,9 @@ final class TestClient implements ClientInterface
             return $this->seen[$response];
         }
 
-        throw new \RuntimeException('No response found');
+        throw new \RuntimeException(sprintf(
+            'No result found for response `%s`',
+            $response,
+        ));
     }
 }
