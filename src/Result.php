@@ -43,6 +43,36 @@ final class Result
         }
     }
 
+    /**
+     * Create instance representing a success.
+     */
+    public static function success(?\DateTimeImmutable $challengeTime = null, ?string $hostname = null): self
+    {
+        return new self(
+            true,
+            [],
+            $challengeTime,
+            $hostname,
+        );
+    }
+
+    /**
+     * Create instance representing a failure.
+     *
+     * @param list<ErrorCode>&non-empty-array $errorCodes
+     */
+    public static function failure(array $errorCodes, ?\DateTimeImmutable $challengeTime = null, ?string $hostname = null): self
+    {
+        Assert::minCount($errorCodes, 1);
+
+        return new self(
+            false,
+            $errorCodes,
+            $challengeTime,
+            $hostname,
+        );
+    }
+
     public static function fromJson(string $json): self
     {
         try {
