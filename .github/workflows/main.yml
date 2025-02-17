@@ -21,6 +21,7 @@ jobs:
           - '8.1'
           - '8.2'
           - '8.3'
+          - '8.4'
         deps:
           - highest
           - lowest
@@ -40,10 +41,10 @@ jobs:
             php: '8.1'
             phpstan: 1
           - os: ubuntu-latest
-            php: '8.3'
+            php: '8.4'
             phpstan: 1
           - os: ubuntu-latest
-            php: '8.3'
+            php: '8.4'
             coverage: 1
           - os: ubuntu-latest
             php: 'nightly'
@@ -74,8 +75,8 @@ jobs:
             composer require --no-update 'psr/http-message:>=1.0.1'
           fi
 
-          composer require --no-update --dev ${{ matrix.psr17 }}
-          composer require --no-update --dev ${{ matrix.psr18 }}
+          composer require --no-update --dev "${{ matrix.psr17 }}"
+          composer require --no-update --dev "${{ matrix.psr18 }}"
       - name: Install dependencies
         uses: ramsey/composer-install@v3
         with:
