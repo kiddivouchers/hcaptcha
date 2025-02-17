@@ -75,8 +75,8 @@ jobs:
             composer require --no-update 'psr/http-message:>=1.0.1'
           fi
 
-          composer require --no-update --dev ${{ matrix.psr17 }}
-          composer require --no-update --dev ${{ matrix.psr18 }}
+          composer require --no-update --dev "${{ matrix.psr17 }}"
+          composer require --no-update --dev "${{ matrix.psr18 }}"
       - name: Install dependencies
         uses: ramsey/composer-install@v3
         with:
