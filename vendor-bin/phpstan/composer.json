@@ -1,10 +1,10 @@
 {
     "require-dev": {
-        "phpstan/phpstan": "^1.12",
-        "phpstan/extension-installer": "^1.4",
-        "phpstan/phpstan-strict-rules": "^1.6",
-        "phpstan/phpstan-phpunit": "^1.4",
-        "staabm/annotate-pull-request-from-checkstyle": "^1.8"
+        "phpstan/phpstan": "^2.1.8",
+        "phpstan/extension-installer": "^1.4.3",
+        "phpstan/phpstan-strict-rules": "^2.0.4",
+        "phpstan/phpstan-phpunit": "^2.0.4",
+        "staabm/annotate-pull-request-from-checkstyle": "^1.8.5"
     },
     "config": {
         "allow-plugins": {

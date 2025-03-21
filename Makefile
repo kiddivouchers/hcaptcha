@@ -17,3 +17,4 @@ phpstan: vendor
 vendor: composer.json vendor-bin/*/composer.json vendor-bin/*/composer.lock
 	composer update
 	composer bin all install
+	touch vendor
