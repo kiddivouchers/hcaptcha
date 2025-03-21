@@ -267,6 +267,17 @@ final class ResultTest extends TestCase
                 'error-codes' => ['not-an-error'],
             ],
         ];
+
+        yield [
+            function (\Throwable $error) {
+                self::assertInstanceOf(\InvalidArgumentException::class, $error);
+                self::assertEquals('Error code `bool` is not recognised', $error->getMessage());
+            },
+            [
+                'success' => false,
+                'error-codes' => [true, 'also-not-an-error'],
+            ],
+        ];
     }
 
     public function testIsError(): void

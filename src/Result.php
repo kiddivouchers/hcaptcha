@@ -150,11 +150,12 @@ final class Result
 
         foreach ($errorCodes as $k => $v) {
             try {
+                // @phpstan-ignore-next-line argument.type The TypeError is handled.
                 $errorCodes[$k] = ErrorCode::from($v);
-            } catch (\ValueError $e) {
+            } catch (\ValueError|\TypeError $e) {
                 throw new \InvalidArgumentException(sprintf(
                     'Error code `%s` is not recognised',
-                    $v,
+                    \is_string($v) ? $v : \get_debug_type($v),
                 ), 0, $e);
             }
         }
