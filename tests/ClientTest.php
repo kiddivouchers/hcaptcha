@@ -134,6 +134,7 @@ final class ClientTest extends TestCase
         }
 
         if (isset($factory)) {
+            // @phpstan-ignore-next-line return.type callable.nonCallable
             return (require basename(__FILE__, '.php') . '/' . $factory)('', $responseFactory);
         }
 

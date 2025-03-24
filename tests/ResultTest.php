@@ -93,7 +93,7 @@ final class ResultTest extends TestCase
         }
     }
 
-    /** @param array<array-key,mixed> $input */
+    /** @param array<string,mixed> $input */
     #[DataProvider('dataFromArray')]
     public function testFromArray(\Closure $callback, array $input): void
     {
@@ -102,7 +102,7 @@ final class ResultTest extends TestCase
         $callback($result);
     }
 
-    /** @return iterable<array-key,array{\Closure,array<array-key,mixed>}> */
+    /** @return iterable<array-key,array{\Closure,array<string,mixed>}> */
     public static function dataFromArray(): iterable
     {
         yield [
@@ -188,6 +188,7 @@ final class ResultTest extends TestCase
     public function testFromArrayWithError(\Closure $callback, array $input): void
     {
         try {
+            // @phpstan-ignore-next-line argument.type
             Result::fromArray($input);
 
             self::fail('Expected throwable to be thrown.');
@@ -265,6 +266,17 @@ final class ResultTest extends TestCase
             [
                 'success' => false,
                 'error-codes' => ['not-an-error'],
+            ],
+        ];
+
+        yield [
+            function (\Throwable $error) {
+                self::assertInstanceOf(\InvalidArgumentException::class, $error);
+                self::assertEquals('Error code `bool` is not recognised', $error->getMessage());
+            },
+            [
+                'success' => false,
+                'error-codes' => [true, 'also-not-an-error'],
             ],
         ];
     }

@@ -88,6 +88,9 @@ final class Result
             ));
         }
 
+        // Remove non-string elements from the array.
+        $response = \array_filter($response, \is_string(...), \ARRAY_FILTER_USE_KEY);
+
         return self::fromArray($response);
     }
 
@@ -148,16 +151,17 @@ final class Result
             ));
         }
 
-        foreach ($errorCodes as $k => $v) {
+        $errorCodes = \array_map(function (mixed $v): ErrorCode {
             try {
-                $errorCodes[$k] = ErrorCode::from($v);
-            } catch (\ValueError $e) {
+                // @phpstan-ignore-next-line argument.type The TypeError is handled.
+                return ErrorCode::from($v);
+            } catch (\ValueError|\TypeError $e) {
                 throw new \InvalidArgumentException(sprintf(
                     'Error code `%s` is not recognised',
-                    $v,
+                    \is_string($v) ? $v : \get_debug_type($v),
                 ), 0, $e);
             }
-        }
+        }, \array_values($errorCodes));
 
         usort($errorCodes, function (ErrorCode $a, ErrorCode $b) {
             return $a->name <=> $b->name;
