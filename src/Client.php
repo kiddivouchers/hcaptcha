@@ -40,7 +40,7 @@ final class Client implements ClientInterface
     public static function create(
         #[\SensitiveParameter()]
         string $secretKey,
-        object|null $httpClient = null,
+        ?object $httpClient = null,
     ): self {
         // @todo This can be removed when minimum requirement is raised to PHP 8.2.
         if ($httpClient !== null && !($httpClient instanceof HttpClientInterface && $httpClient instanceof RequestFactoryInterface && $httpClient instanceof StreamFactoryInterface)) {
