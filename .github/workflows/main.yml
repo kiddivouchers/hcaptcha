@@ -59,7 +59,7 @@ jobs:
       fail-fast: true
     name: 'PHP ${{ matrix.php }} / ${{ matrix.deps }} (PSR-17: ${{ matrix.psr17 }}) (PSR-18: ${{ matrix.psr18 }})'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
