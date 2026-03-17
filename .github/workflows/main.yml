@@ -123,3 +123,17 @@ jobs:
         if: matrix.phpstan == 1
         run: |
           (vendor-bin/phpstan/vendor/bin/phpstan analyse --no-progress --error-format=checkstyle || true) | vendor-bin/phpstan/vendor/bin/cs2pr
+  # This combines the results of the matrix into a single status which can then
+  # be asserted against in the GitHub branch protection rules.
+  #
+  # Ideally this would exempt the experimental jobs from the result check, we
+  # might need to look into doing that if those jobs start failing.
+  #
+  # https://github.com/orgs/community/discussions/4324#discussioncomment-13335158
+  consolidate:
+    name: Continuous Integration Pipeline
+    runs-on: ubuntu-slim
+    needs: [build]
+    if: always()
+    steps:
+      - run: ${{!contains(needs.*.result, 'failure')}}
