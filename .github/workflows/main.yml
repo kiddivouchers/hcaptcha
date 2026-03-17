@@ -34,6 +34,7 @@ jobs:
           - symfony/http-client:^5.4
           - symfony/http-client:^6.4
           - symfony/http-client:^7.1
+          - symfony/http-client:^8.0
           - guzzlehttp/guzzle:^7
         experimental: [false]
         include:
@@ -56,6 +57,15 @@ jobs:
           - os: ubuntu-latest
             php: 8.1
             psr18: symfony/http-client:^7.1
+          - os: ubuntu-latest
+            php: 8.1
+            psr18: symfony/http-client:^8.0
+          - os: ubuntu-latest
+            php: 8.2
+            psr18: symfony/http-client:^8.0
+          - os: ubuntu-latest
+            php: 8.3
+            psr18: symfony/http-client:^8.0
       fail-fast: true
     name: 'PHP ${{ matrix.php }} / ${{ matrix.deps }} (PSR-17: ${{ matrix.psr17 }}) (PSR-18: ${{ matrix.psr18 }})'
     steps:
