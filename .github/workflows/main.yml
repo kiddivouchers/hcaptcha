@@ -18,7 +18,6 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         php:
-          - '8.1'
           - '8.2'
           - '8.3'
           - '8.4'
@@ -40,7 +39,7 @@ jobs:
         experimental: [false]
         include:
           - os: ubuntu-latest
-            php: '8.1'
+            php: '8.2'
             phpstan: 1
           - os: ubuntu-latest
             php: '8.5'
@@ -55,12 +54,6 @@ jobs:
             psr18: 'symfony/http-client:^7.4'
             experimental: true
         exclude:
-          - os: ubuntu-latest
-            php: 8.1
-            psr18: symfony/http-client:^7.4
-          - os: ubuntu-latest
-            php: 8.1
-            psr18: symfony/http-client:^8.0
           - os: ubuntu-latest
             php: 8.2
             psr18: symfony/http-client:^8.0
