@@ -15,6 +15,7 @@ namespace WiderPlan\Hcaptcha;
 
 use Http\Discovery\Psr18Client;
 use Psr\Http\Client\ClientInterface as HttpClientInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
@@ -69,7 +70,11 @@ final class Client implements ClientInterface
             ->withAddedHeader('Accept', 'application/json')
             ->withBody($this->streamFactory->createStream($body));
 
-        $response = $this->httpClient->sendRequest($request);
+        try {
+            $response = $this->httpClient->sendRequest($request);
+        } catch (NetworkExceptionInterface) {
+            return Result::failure([ErrorCode::RESPONSE_INVALID]);
+        }
 
         if ($response->getStatusCode() === 200 && $response->getHeaderLine('Content-Type') === 'application/json') {
             return Result::fromJson((string) $response->getBody());
